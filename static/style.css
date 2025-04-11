@@ -1,0 +1,69 @@
+#avatar-container {
+    position: relative;
+    width: 200px;
+    margin: 0 auto 20px;
+  }
+  
+  #avatar {
+    width: 100%;
+    display: block;
+    border-radius: 50%;
+    border: 4px solid #ff4757;
+  }
+  
+  /* Mouth setup */
+  .mouth {
+    position: absolute;
+    bottom: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 10px;
+    background: #000;
+    border-radius: 50%;
+    transform-origin: center;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+  }
+  
+  /* Eyes setup */
+  .eyes {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    width: 40px;
+    height: 20px;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  
+  .eyes::before,
+  .eyes::after {
+    content: '';
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background: black;
+    border-radius: 50%;
+    animation: blink 5s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 97%, 100% { transform: scaleY(1); }
+    98%, 99% { transform: scaleY(0.1); }
+  }
+  
+  /* Talking state triggers mouth animation */
+  .talking .mouth {
+    animation: mouthMove 0.3s infinite;
+    opacity: 1;
+  }
+  
+  @keyframes mouthMove {
+    0% { transform: translateX(-50%) scaleY(1); }
+    50% { transform: translateX(-50%) scaleY(0.4); }
+    100% { transform: translateX(-50%) scaleY(1); }
+  }
+  
