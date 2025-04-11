@@ -15,8 +15,7 @@ except Exception as e:
     raise RuntimeError(f"Failed to load Whisper model: {e}")
 
 # Set your OpenRouter API Key (if using AI response)
-OPENROUTER_API_KEY = "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"
-
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 # Homepage
 @app.route("/")
 def index():
