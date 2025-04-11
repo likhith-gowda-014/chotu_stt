@@ -8,20 +8,21 @@ import io
 
 app = Flask(__name__)
 
-# Set up Whisper STT model (using tiny for Render compatibility)
+# Load Whisper STT model (tiny.en = lightweight + English only)
 try:
-    stt_model = WhisperModel("tiny", device="cpu")  # Use 'tiny' model for lightweight deployment
+    print("Loading Whisper model...")
+    stt_model = WhisperModel("tiny.en", device="cpu")
+    print("Whisper model loaded.")
 except Exception as e:
     raise RuntimeError(f"Failed to load Whisper model: {e}")
 
-# Set your OpenRouter API Key (if using AI response)
+# Load OpenRouter API Key securely from environment
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-# Homepage
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# Speech-to-Text (STT)
 @app.route("/stt", methods=["POST"])
 def speech_to_text():
     if "audio" not in request.files:
@@ -35,8 +36,11 @@ def speech_to_text():
             audio_file.save(temp_audio_file)
             temp_audio_path = temp_audio_file.name
 
-        print(f"Processing audio file at: {temp_audio_path}")
-        segments, _ = stt_model.transcribe(temp_audio_path, beam_size=5)
+        print(f"Saved audio to: {temp_audio_path}")
+        print("Starting transcription...")
+
+        # Transcribe with beam_size=1 to reduce memory usage
+        segments, _ = stt_model.transcribe(temp_audio_path, beam_size=1)
         transcribed_text = " ".join([segment.text for segment in segments]).strip()
         print(f"Transcribed text: {transcribed_text}")
 
@@ -61,7 +65,6 @@ def speech_to_text():
         "tts_audio_url": "/tts_audio",
     })
 
-# AI response via OpenRouter
 def get_ai_response(user_input):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -83,7 +86,6 @@ def get_ai_response(user_input):
         print(f"OpenRouter Error: {e}")
         return "I'm sorry, I couldn't process your request right now."
 
-# Convert text to speech
 def convert_text_to_speech(text):
     tts = gTTS(text=text, lang='en')
     audio_data = io.BytesIO()
@@ -91,7 +93,6 @@ def convert_text_to_speech(text):
     audio_data.seek(0)
     return audio_data
 
-# Serve TTS audio (POST request with text)
 @app.route("/tts_audio", methods=["POST"])
 def tts_audio():
     data = request.get_json()
@@ -111,7 +112,6 @@ def tts_audio():
         print(f"Error during TTS: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Entry point for local testing or Render startup
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # fallback to 10000 if not set (good for local dev)
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
